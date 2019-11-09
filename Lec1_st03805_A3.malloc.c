@@ -19,8 +19,25 @@ int my_init()
     head = mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     head->size = 1048576 - sizeof(node_t);
     head->next = NULL;
-    return 11;
+    return 1;
 
+};
+
+
+
+void my_free(void *ptr)
+{
+    node_t *temp = head;
+    while (temp->next != NULL)
+    {
+	temp = temp->next;
+	
+    };
+    
+    int ptr_size = *((int *)ptr - 2);
+    temp->next = (node_t *) ptr - 2;
+    temp->next->size = ptr_size;
+    temp->next->next = NULL;
 };
 
 void *my_malloc(int size)
@@ -266,7 +283,7 @@ void my_showfreelist()
     node_t *temp = head;
     while (temp != NULL)
     {
-        printf("%d:%d:%d\n", node_no,temp->size,100); //Not printing address.
+        printf("Free-list:\n%d:%d:%d\nEnd\n", node_no,temp->size,100); //Not printing address.
         node_no++;
         temp = temp->next;
     };
@@ -280,8 +297,11 @@ int main()
     my_showfreelist();
     my_malloc(1000);
     my_showfreelist();
-    my_malloc(200);
+    void *p = my_malloc(200);
     my_showfreelist();
+    my_free(p);
+    my_showfreelist();
+    
 	
     
     return 0;
