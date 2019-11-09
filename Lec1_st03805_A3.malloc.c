@@ -74,7 +74,7 @@ void *my_malloc(int size)
 	
 	    if (actual_free_space == needed_space)
 		{
-		    int* ptr = (int*) head;
+		    int* ptr = (int*) temp;
 		    *ptr = size;
 		    *(ptr+1) = 12345; //Magic number.
 		    printf("Memory of size %d allocated!\n", size);
@@ -93,7 +93,41 @@ void *my_malloc(int size)
 		
 		    
 		};
-	};	
+
+	    if (actual_free_space > needed_space)
+	    {
+	    	node_t *temp_next = temp->next;
+		int* ptr = (int*) temp;
+	    	*ptr = size;
+	    	*(ptr+1) = 12345; //Magic number.
+	    	printf("Memory of size %d allocated!\n", size);
+	    
+	    	if ((actual_free_space - needed_space) >= sizeof(node_t))
+	    	{
+		    /*char *t = (char *) head;
+		    t = t + needed_space;
+		    (char *)head = t;*/
+		
+		    temp = (char *) temp + needed_space;
+
+
+		    temp->size = actual_free_space - needed_space - sizeof(node_t);
+		    temp->next = temp_next;
+		    return ptr + 2;
+	    	};
+
+	    	if ((actual_free_space - needed_space) < sizeof(node_t))
+	    	{
+		    prev->next = temp->next;
+		    
+	    	};
+	    };
+
+	prev = temp;
+	temp = temp->next;
+
+
+        };	
     };
 
     printf("Memory unavailable!\n");
