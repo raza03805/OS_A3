@@ -64,7 +64,7 @@ void *my_malloc(int size)
 		t = t + needed_space;
 		(char *)head = t;*/
 		
-		head = (char *) head + needed_space;
+		head = (node_t *)((char *) head + needed_space);
 
 
 		head->size = actual_free_space - needed_space - sizeof(node_t);
@@ -116,7 +116,7 @@ void *my_malloc(int size)
 
 	    if (actual_free_space > needed_space)
 	    {
-                printf("entered");
+                //printf("entered");
 	    	node_t *temp_next = temp->next;
 		int* ptr = (int*) temp;
 	    	*ptr = size;
@@ -305,7 +305,7 @@ void my_showfreelist()
     printf("\nStart of Freelist\n");
     while (temp != NULL)
     {
-        printf("%d:%d:%d\n", node_no,temp->size,100); //Not printing address.
+        printf("%d:%d:%p\n", node_no,temp->size,temp); //Not printing address.
         node_no++;
         temp = temp->next;
     };
