@@ -16,6 +16,7 @@ node_t *head = NULL; //points to the start of free list.
 
 int my_init()
 {
+    //1048576
     head = mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     head->size = 1048576 - sizeof(node_t);
     head->next = NULL;
@@ -35,7 +36,8 @@ void my_free(void *ptr)
     };
     
     int ptr_size = *((int *)ptr - 2);
-    temp->next = (node_t *) ptr - 2;
+    int *tptr = ptr - 2;
+    temp->next = (node_t *) tptr;
     temp->next->size = ptr_size;
     temp->next->next = NULL;
 };
@@ -54,7 +56,7 @@ void *my_malloc(int size)
 	    int* ptr = (int*) head;
 	    *ptr = size;
 	    *(ptr+1) = 12345; //Magic number.
-	    printf("Memory of size %d allocated!\n", size);
+	    printf("\nMemory of size %d allocated!\n", size);
 	    
 	    if ((actual_free_space - needed_space) >= sizeof(node_t))
 	    {
@@ -73,7 +75,7 @@ void *my_malloc(int size)
 	}
 	else
 	{
-	    printf("Memory unavailable!\n");
+	    printf("\nMemory unavailable!\n");
 	    return NULL;
 	};
     };    
@@ -94,7 +96,7 @@ void *my_malloc(int size)
 		    int* ptr = (int*) temp;
 		    *ptr = size;
 		    *(ptr+1) = 12345; //Magic number.
-		    printf("Memory of size %d allocated!\n", size);
+		    printf("\nMemory of size %d allocated!\n", size);
 		
 		    if (temp == head)
 		    {
@@ -117,7 +119,7 @@ void *my_malloc(int size)
 		int* ptr = (int*) temp;
 	    	*ptr = size;
 	    	*(ptr+1) = 12345; //Magic number.
-	    	printf("Memory of size %d allocated!\n", size);
+	    	printf("\nMemory of size %d allocated!\n", size);
 	    
 	    	if ((actual_free_space - needed_space) >= sizeof(node_t))
 	    	{
@@ -147,7 +149,7 @@ void *my_malloc(int size)
         };	
     };
 
-    printf("Memory unavailable!\n");
+    printf("\nMemory unavailable!\n");
     return NULL;
 
 
@@ -281,12 +283,14 @@ void my_showfreelist()
 {
     int node_no = 0;
     node_t *temp = head;
+    printf("\nStart of Freelist\n");
     while (temp != NULL)
     {
-        printf("Free-list:\n%d:%d:%d\nEnd\n", node_no,temp->size,100); //Not printing address.
+        printf("%d:%d:%d\n", node_no,temp->size,100); //Not printing address.
         node_no++;
         temp = temp->next;
     };
+    printf("End of Freelist\n");
 
 };
 
@@ -295,11 +299,13 @@ int main()
 {
     my_init();
     my_showfreelist();
-    my_malloc(1000);
+    void *p = my_malloc(1000);
     my_showfreelist();
-    void *p = my_malloc(200);
+    void *a = my_malloc(200);
     my_showfreelist();
     my_free(p);
+    printf("\npointer pointing to:%d\n",*( (int *) p - 2 ) );
+    
     my_showfreelist();
     
 	
