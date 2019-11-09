@@ -25,7 +25,45 @@ int my_init()
 
 void *my_malloc(int size)
 {
-    int head_size = head->size;
+    //The following code does not check if the requested size is very big that there would be no space for free-list.
+    if (head->next == NULL)
+    {
+        int old_head_size = head->size;
+	int actual_free_space = sizeof(node_t) + old_head_size;
+	int needed_space = (2*sizeof(int)) + size;
+	
+	if (actual_free_space >= needed_space)
+	{
+	    int* ptr = (int*) head;
+	    *ptr = size;
+	    *(ptr+1) = 12345; //Magic number.
+	    printf("Memory of size %d allocated!\n", size);
+	    
+	    if ((actual_free_space - needed_space) >= sizeof(node_t))
+	    {
+		/*char *t = (char *) head;
+		t = t + needed_space;
+		(char *)head = t;*/
+		
+		head = (char *) head + needed_space;
+
+
+		head->size = actual_free_space - needed_space - sizeof(node_t);
+		head->next = NULL;
+		return ptr + 2;
+	    };
+	    
+	}
+	else
+	{
+	    printf("Memory unavailable!\n");
+	    return NULL;
+	};
+    };    
+
+
+
+/*    int head_size = head->size;
     int actual_size = size + 8;
     if (head->next == NULL)
     {
@@ -44,7 +82,7 @@ void *my_malloc(int size)
 
 	};
     };
-
+
     if (head->next !=NULL)
     {
         node_t* temp = head;
@@ -101,7 +139,7 @@ void *my_malloc(int size)
 
 	
     };
-
+*/
 
     /*size += 8;
     node_t* temp = head;
@@ -155,7 +193,7 @@ void my_showfreelist()
     node_t *temp = head;
     while (temp != NULL)
     {
-        printf("%d:%d:%d\n", node_no,temp->size,100);
+        printf("%d:%d:%d\n", node_no,temp->size,100); //Not printing address.
         node_no++;
         temp = temp->next;
     };
@@ -167,7 +205,7 @@ int main()
 {
     my_init();
     my_showfreelist();
-    my_malloc(100);
+    my_malloc(1000);
     my_showfreelist();
     my_malloc(200);
     my_showfreelist();
