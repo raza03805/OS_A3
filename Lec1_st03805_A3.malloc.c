@@ -17,8 +17,8 @@ node_t *head = NULL; //points to the start of free list.
 int my_init()
 {
     //1048576
-    head = mmap(NULL, 1048576, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
-    head->size = 1048576 - sizeof(node_t);
+    head = mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    head->size = 1024 - sizeof(node_t);
     head->next = NULL;
     return 1;
 
@@ -92,7 +92,8 @@ void *my_malloc(int size)
 	    int needed_space = (2*sizeof(int)) + size;
 	
 	    if (actual_free_space == needed_space)
-		{
+		{ 
+
 		    int* ptr = (int*) temp;
 		    *ptr = size;
 		    *(ptr+1) = 12345; //Magic number.
@@ -115,6 +116,7 @@ void *my_malloc(int size)
 
 	    if (actual_free_space > needed_space)
 	    {
+                printf("entered");
 	    	node_t *temp_next = temp->next;
 		int* ptr = (int*) temp;
 	    	*ptr = size;
@@ -126,13 +128,30 @@ void *my_malloc(int size)
 		    /*char *t = (char *) head;
 		    t = t + needed_space;
 		    (char *)head = t;*/
+
+                    if (head == temp)
 		
-		    temp = (char *) temp + needed_space;
-
-
+		    {
+                    temp = (char *) temp + needed_space;	
+                    int free_size = actual_free_space - needed_space - sizeof(node_t); 
 		    temp->size = actual_free_space - needed_space - sizeof(node_t);
+                    printf("%d",free_size);  
 		    temp->next = temp_next;
+                    head = temp;
 		    return ptr + 2;
+	            }
+                    else
+		    {
+                    temp = (char *) temp + needed_space;	
+                    int free_size = actual_free_space - needed_space - sizeof(node_t); 
+		    temp->size = actual_free_space - needed_space - sizeof(node_t);
+                    printf("%d",free_size);  
+		    temp->next = temp_next;
+                    prev->next = temp;
+		    return ptr + 2;
+	            }
+
+
 	    	};
 
 	    	if ((actual_free_space - needed_space) < sizeof(node_t))
@@ -299,12 +318,15 @@ int main()
 {
     my_init();
     my_showfreelist();
-    void *p = my_malloc(1000);
+    void *p = my_malloc(24);
     my_showfreelist();
     void *a = my_malloc(200);
     my_showfreelist();
     my_free(p);
+    my_free(a);
     printf("\npointer pointing to:%d\n",*( (int *) p - 2 ) );
+    my_showfreelist();
+    void *c = my_malloc(500);
     
     my_showfreelist();
     
