@@ -3,7 +3,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
-
+#define magic 12345
 
 typedef struct node_t
 {
@@ -28,18 +28,25 @@ int my_init()
 
 void my_free(void *ptr)
 {
-    node_t *temp = head;
-    while (temp->next != NULL)
+    if (*((int *)ptr - 1) != magic)
     {
-        temp = temp->next;
+	printf("\nInvalid pointer given!\n");
+    }
+    else
+    {
+	    node_t *temp = head;
+	    while (temp->next != NULL)
+	    {
+		temp = temp->next;
 
+	    };
+
+	    int ptr_size = *((int *)ptr - 2);
+	    int *tptr = ptr - 2;
+	    temp->next = (node_t *) tptr;
+	    temp->next->size = ptr_size;
+	    temp->next->next = NULL;
     };
-
-    int ptr_size = *((int *)ptr - 2);
-    int *tptr = ptr - 2;
-    temp->next = (node_t *) tptr;
-    temp->next->size = ptr_size;
-    temp->next->next = NULL;
 };
 
 void *my_malloc(int size)
@@ -75,7 +82,7 @@ void *my_malloc(int size)
         }
         else
         {
-            printf("\nMemory unavailable!\n");
+            printf("\nMemory of size %d unavailable!\n",size);
             return NULL;
         };
     };
@@ -132,20 +139,20 @@ void *my_malloc(int size)
                     if (head == temp)
 
                     {
-                        temp = (char *) temp + needed_space;
+                        temp = (node_t *)((char *) temp + needed_space);
                         int free_size = actual_free_space - needed_space - sizeof(node_t);
                         temp->size = actual_free_space - needed_space - sizeof(node_t);
-                        printf("%d",free_size);
+                        //printf("%d",free_size);
                         temp->next = temp_next;
                         head = temp;
                         return ptr + 2;
                     }
                     else
                     {
-                        temp = (char *) temp + needed_space;
+                        temp = (node_t *)((char *) temp + needed_space);
                         int free_size = actual_free_space - needed_space - sizeof(node_t);
                         temp->size = actual_free_space - needed_space - sizeof(node_t);
-                        printf("%d",free_size);
+                        //printf("%d",free_size);
                         temp->next = temp_next;
                         prev->next = temp;
                         return ptr + 2;
@@ -156,8 +163,17 @@ void *my_malloc(int size)
 
                 if ((actual_free_space - needed_space) < sizeof(node_t))
                 {
-                    prev->next = temp->next;
-
+                    if (temp != head)
+                    {
+			prev->next = temp->next;
+			return ptr + 2;
+		    }
+		    else
+                    {
+			head = head->next;
+                        return ptr + 2;
+                       
+                    }
                 };
             };
 
@@ -168,135 +184,42 @@ void *my_malloc(int size)
         };
     };
 
-    printf("\nMemory unavailable!\n");
+    printf("\nMemory of size %d unavailable!\n",size);
     return NULL;
+};
 
+void *my_calloc(int num, int size)
+{
 
+    int total_size = num*size;
+    printf("%d",total_size);
+    void *p = my_malloc(total_size);
+    printf("\n%d\n",*((int *)p - 1));
+    if (p == NULL)
+    { 
+	printf("calloc isnt successful!");
 
-
-    /*    int head_size = head->size;
-        int actual_size = size + 8;
-        if (head->next == NULL)
-        {
-
-    	if (head->size >= actual_size)
-    	{
-    	    int *ptr = (int *) head;
-    	    *ptr = size;
-            *(ptr + 1) = 12345; //Overwriting on struct space, which is of 16 bytes.
-    	    printf("Allocated %d\n",size);
-
-    	    head_size -= actual_size;
-    	    head = head + size; //Do i need to cast it into char to move head pointer?.
-    	    head->size = head_size;
-    	    return (ptr + 2);
-
-    	};
-        };
-
-        if (head->next !=NULL)
-        {
-            node_t* temp = head;
-            node_t* prev = head;
-
-            while(temp != NULL)
-            {
-                if (temp->size == actual_size)
-                {
-                    if(temp->next == NULL)
-                    {
-                        prev->next = NULL;
-                    };
-
-
-                    if(temp->next != NULL)
-                    {
-                        prev->next = temp->next;
-                    };
-
-    	        int *ptr = (int *) temp;
-    	        *ptr = size;
-                *(ptr + 1) = 12345; //Overwriting on struct space, which is of 16 bytes.
-    	        printf("Allocated %d\n",size);
-    			return ptr + 2;
-
-                };
-
-                if (temp->size > actual_size)
-                {
-    				int temp_size = temp->size;
-    				node_t *temp_next = temp->next;
-    				int *ptr = (int *) temp;
-    				*ptr = size;
-    				*(ptr + 1) = 12345; //Overwriting on struct space, which is of 16 bytes.
-    				printf("Allocated %d\n",size);
-
-
-    				temp_size -= actual_size;
-    				prev->next = ptr + size; //Do i need to cast it into char to move head pointer?.
-    				prev->size = head_size;
-
-
-    				return ptr + 2;
-
-                };
-
-            prev = temp;
-    	    temp = temp->next;
-            };
-
-        printf("No space of size %d available.",size);
-        return NULL;
-
-
-        };
-    */
-
-    /*size += 8;
-    node_t* temp = head;
-    node_t* prev = head;
-
-    while(temp != NULL && temp->size < size)
+    }
+    else
     {
-    prev = temp;
-    temp = temp->next;
+	char *ptr = (char *) p;
+	int counter = 0;
+	while (counter != total_size)
+ 	{
+	    *(ptr + counter) = "A";
+            counter++;
+	};
+    
     };
 
-
-    if(temp->next == NULL)
-    {
-        prev->next = NULL;
-    };
-
-    if(temp->next != NULL)
-    {
-        prev->next = temp->next;
-    };
-
-
-    if(temp == NULL)
-    {
-    printf("No space of size %d available.",size);
-    return NULL;
-    };
-
-
-    int *ptr = (int *) temp;
-
-    *ptr = size;
-    *(ptr + 1) = 12345;
-
-    size -= 8;
-    if(temp != NULL)
-    {
-
-    printf("Allocated %d\n",size);
-    };
-
-
-    return ptr + 2;*/
+    return p;
 
 };
+
+
+
+
+
 
 void my_showfreelist()
 {
@@ -327,8 +250,32 @@ int main()
     printf("\npointer pointing to:%d\n",*( (int *) p - 2 ) );
     my_showfreelist();
     void *c = my_malloc(500);
+    my_showfreelist();
+    void *d = my_malloc(50);
+    my_showfreelist();
+    void *e = my_malloc(80);
+    my_showfreelist();
+    void *f = my_malloc(150);
 
     my_showfreelist();
+    my_free(a);
+    my_free(c);
+    my_free(d);
+    my_free(e);
+    my_free(f);
+    my_showfreelist();
+    void *g = my_malloc(108);
+    my_showfreelist();
+    my_free(g);
+    my_showfreelist();
+    void *h = my_calloc(10, 10);
+    //void *h = my_malloc(100);
+
+    my_showfreelist();
+    my_free(h);
+    my_showfreelist();
+    
+
 
 
 
