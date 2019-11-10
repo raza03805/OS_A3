@@ -20,13 +20,13 @@ int my_init()
     //1048576
     if (head != NULL)
     {
-	printf("Request rejected!, my_init alreay initiallized!");
+	printf("\nRequest rejected!, my_init already initialized!\n");
         return 0;
     };
     head = mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     if (head == MAP_FAILED)
     {
-	printf("Request rejected!, mmap call unsuccessful!!");
+	printf("\nRequest rejected!, mmap call unsuccessful!\n");
         return 0;
     };
    
@@ -40,7 +40,9 @@ int my_init()
 
 void my_free(void *ptr)
 {
-    if (*((int *)ptr - 1) != magic)
+    if (head != NULL)
+
+    {if (*((int *)ptr - 1) != magic)
     {
 	printf("\nInvalid pointer given!\n");
     }
@@ -58,18 +60,17 @@ void my_free(void *ptr)
 	    temp->next = (node_t *) tptr;
 	    temp->next->size = ptr_size;
 	    temp->next->next = NULL;
-    };
+    };}
+    else{printf("\nmy_free unsuccessful, my_init not initialized!\n");};
+
 };
 
 void *my_malloc(int size)
 {
-    //The following code does not check if the requested size is very big that there would be no space for free-list.
-
     if (head == NULL)
     {
-	printf("my_malloc unsuccessful, my_init isnt initiallized!");
+	printf("\nmy_malloc unsuccessful, my_init isnt initialized!\n");
 	return NULL;	
-
     };
 
       
@@ -79,27 +80,20 @@ void *my_malloc(int size)
         int actual_free_space = sizeof(node_t) + old_head_size;
         int needed_space = (2*sizeof(int)) + size;
 
-        if (actual_free_space >= needed_space)
+        if (actual_free_space > (needed_space + sizeof(node_t)))
         {
             int* ptr = (int*) head;
             *ptr = size;
-            *(ptr+1) = 12345; //Magic number.
+            *(ptr+1) = magic; //Magic number.
             printf("\nMemory of size %d allocated!\n", size);
 
             if ((actual_free_space - needed_space) >= sizeof(node_t))
             {
-                /*char *t = (char *) head;
-                t = t + needed_space;
-                (char *)head = t;*/
-
                 head = (node_t *)((char *) head + needed_space);
-
-
                 head->size = actual_free_space - needed_space - sizeof(node_t);
                 head->next = NULL;
                 return ptr + 2;
             };
-
         }
         else
         {
@@ -121,10 +115,9 @@ void *my_malloc(int size)
 
             if (actual_free_space == needed_space)
             {
-
                 int* ptr = (int*) temp;
                 *ptr = size;
-                *(ptr+1) = 12345; //Magic number.
+                *(ptr+1) = magic; //Magic number.
                 printf("\nMemory of size %d allocated!\n", size);
 
                 if (temp == head)
@@ -138,8 +131,6 @@ void *my_malloc(int size)
                 };
 
                 return ptr + 2;
-
-
             };
 
             if (actual_free_space > needed_space)
@@ -148,15 +139,11 @@ void *my_malloc(int size)
                 node_t *temp_next = temp->next;
                 int* ptr = (int*) temp;
                 *ptr = size;
-                *(ptr+1) = 12345; //Magic number.
+                *(ptr+1) = magic; //Magic number.
                 printf("\nMemory of size %d allocated!\n", size);
 
                 if ((actual_free_space - needed_space) >= sizeof(node_t))
                 {
-                    /*char *t = (char *) head;
-                    t = t + needed_space;
-                    (char *)head = t;*/
-
                     if (head == temp)
 
                     {
@@ -178,8 +165,6 @@ void *my_malloc(int size)
                         prev->next = temp;
                         return ptr + 2;
                     }
-
-
                 };
 
                 if ((actual_free_space - needed_space) < sizeof(node_t))
@@ -192,19 +177,15 @@ void *my_malloc(int size)
 		    else
                     {
 			head = head->next;
-                        return ptr + 2;
-                       
+            	        return ptr + 2;  
                     }
                 };
             };
 
             prev = temp;
             temp = temp->next;
-
-
         };
     };
-
     printf("\nMemory of size %d unavailable!\n",size);
     return NULL;
 };
@@ -214,7 +195,7 @@ void *my_calloc(int num, int size)
 
     if (head == NULL)
     {
-	printf("my_realloc unsuccessful, my_init isnt initiallized!");
+	printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
 	return NULL;	
 
     };
@@ -225,7 +206,7 @@ void *my_calloc(int num, int size)
     printf("\n%d\n",*((int *)p - 1));
     if (p == NULL)
     { 
-	printf("calloc isnt successful!");
+	printf("\ncalloc isnt successful!\n");
 
     }
     else
@@ -249,7 +230,7 @@ void *my_realloc(void *old_ptr, int new_size)
 
     if (head == NULL)
     {
-	printf("my_realloc unsuccessful, my_init isnt initiallized!");
+	printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
 	return NULL;	
 
     };
@@ -262,7 +243,7 @@ void *my_realloc(void *old_ptr, int new_size)
 
     if (new_ptr == NULL)
     {
-	printf("Reqest of realloc rejected due to unavailability of space!\n");
+	printf("\nRequest of realloc rejected due to unavailability of space!\n");
 	return NULL;
     };
     
@@ -275,7 +256,7 @@ void *my_realloc(void *old_ptr, int new_size)
 
     };
     
-    printf("Reqest of realloc accepted!\n");
+    printf("\nRequest of realloc accepted!\n");
     my_free(old_ptr);
     return new_ptr;
 };
@@ -292,7 +273,7 @@ void my_showfreelist()
     printf("\nStart of Freelist\n");
     while (temp != NULL)
     {
-        printf("%d:%d:%p\n", node_no,temp->size,temp); //Not printing address.
+        printf("%d:%d:%p\n", node_no,temp->size,temp); 
         node_no++;
         temp = temp->next;
     };
@@ -301,7 +282,7 @@ void my_showfreelist()
 
     if (head == NULL)
     {
-	printf("my_showfreelist unsuccessful, my_init isnt initiallized!");	
+	printf("\nmy_showfreelist unsuccessful, my_init isnt initialized!\n");	
 
     };
 };
@@ -349,6 +330,13 @@ int main()
     my_showfreelist();
     my_init();
 
+
+/*    my_showfreelist();
+    
+    void *h = my_malloc(100);
+    my_free(h);
+
+*/
     return 0;
 };
 
