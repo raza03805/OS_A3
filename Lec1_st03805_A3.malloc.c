@@ -14,10 +14,22 @@ typedef struct node_t
 
 node_t *head = NULL; //points to the start of free list.
 
+
 int my_init()
 {
     //1048576
+    if (head != NULL)
+    {
+	printf("Request rejected!, my_init alreay initiallized!");
+        return 0;
+    };
     head = mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    if (head == MAP_FAILED)
+    {
+	printf("Request rejected!, mmap call unsuccessful!!");
+        return 0;
+    };
+   
     head->size = 1024 - sizeof(node_t);
     head->next = NULL;
     return 1;
@@ -52,6 +64,15 @@ void my_free(void *ptr)
 void *my_malloc(int size)
 {
     //The following code does not check if the requested size is very big that there would be no space for free-list.
+
+    if (head == NULL)
+    {
+	printf("my_malloc unsuccessful, my_init isnt initiallized!");
+	return NULL;	
+
+    };
+
+      
     if (head->next == NULL)
     {
         int old_head_size = head->size;
@@ -191,6 +212,13 @@ void *my_malloc(int size)
 void *my_calloc(int num, int size)
 {
 
+    if (head == NULL)
+    {
+	printf("my_realloc unsuccessful, my_init isnt initiallized!");
+	return NULL;	
+
+    };
+
     int total_size = num*size;
     printf("%d",total_size);
     void *p = my_malloc(total_size);
@@ -216,13 +244,49 @@ void *my_calloc(int num, int size)
 
 };
 
+void *my_realloc(void *old_ptr, int new_size)
+{
 
+    if (head == NULL)
+    {
+	printf("my_realloc unsuccessful, my_init isnt initiallized!");
+	return NULL;	
+
+    };
+
+    int old_size = *(((int *) old_ptr) - 2);
+    printf("%d", old_size);
+    int needed_size = old_size + new_size;
+
+    void *new_ptr = my_malloc(needed_size);
+
+    if (new_ptr == NULL)
+    {
+	printf("Reqest of realloc rejected due to unavailability of space!\n");
+	return NULL;
+    };
+    
+    int counter = 0;
+
+    while (counter != old_size)
+    {
+	*((char *) new_ptr + counter) = *((char *) old_ptr + counter);
+	counter++; 
+
+    };
+    
+    printf("Reqest of realloc accepted!\n");
+    my_free(old_ptr);
+    return new_ptr;
+};
 
 
 
 
 void my_showfreelist()
 {
+    if (head != NULL)
+    {
     int node_no = 0;
     node_t *temp = head;
     printf("\nStart of Freelist\n");
@@ -233,7 +297,13 @@ void my_showfreelist()
         temp = temp->next;
     };
     printf("End of Freelist\n");
+    }; 
 
+    if (head == NULL)
+    {
+	printf("my_showfreelist unsuccessful, my_init isnt initiallized!");	
+
+    };
 };
 
 
@@ -270,17 +340,17 @@ int main()
     my_showfreelist();
     void *h = my_calloc(10, 10);
     //void *h = my_malloc(100);
+    printf("\npointer pointing to:%d\n",*( (int *) h - 2 ) );
+
 
     my_showfreelist();
-    my_free(h);
+    void *i = my_realloc(h, 100);
+    //my_free(h);
     my_showfreelist();
-    
-
-
-
+    my_init();
 
     return 0;
-}
+};
 
 
 
