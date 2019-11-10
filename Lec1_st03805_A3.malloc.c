@@ -4,6 +4,8 @@
 #include <sys/mman.h>
 
 #define magic 12345
+#define memory 1024
+//#define memory 1048576
 
 typedef struct node_t
 {
@@ -17,13 +19,12 @@ node_t *head = NULL; //points to the start of free list.
 
 int my_init()
 {
-    //1048576
     if (head != NULL)
     {
 	printf("\nRequest rejected!, my_init already initialized!\n");
         return 0;
     };
-    head = mmap(NULL, 1024, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    head = mmap(NULL, memory, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     if (head == MAP_FAILED)
     {
 	printf("\nRequest rejected!, mmap call unsuccessful!\n");
@@ -288,6 +289,66 @@ void my_showfreelist()
 };
 
 
+
+void my_coalesce()
+{
+    if (head != NULL)
+    {
+        node_t *temp = head;
+        while (temp != NULL)
+	{
+	    node_t *current = temp->next;
+	    node_t *current_prev = temp;
+	    while (current != NULL)
+	    {
+		if (temp == (current - 1))
+		{
+		    current_prev->next = current->next;
+		    *((int *) temp) = *((int *) temp) + sizeof(node_t) + current->size;
+		};
+		
+		current = current->next;
+	    };
+	    temp = temp->next;
+	};
+    }
+    else
+    {
+	printf("\nmy_coalesce unsuccessful, my_init isnt initialized!\n");
+    };
+
+
+
+};
+
+
+
+void my_uninit()
+{
+
+    if (head == NULL)
+    {
+	printf("\nmy_uninit unsuccessful, first call my_init!\n");
+    }
+    else
+    {
+	int unmap = munmap(head, memory);
+        printf("\n%d\n",unmap);
+        if (unmap == 0)
+	{
+	    printf("\nmy_uninit successful!\n");
+	    head = NULL;
+	}
+	else
+	{
+	    printf("\nmy_uninit unsuccessful!\n");   
+	};
+	
+    };   
+
+};
+
+
 int main()
 {
     my_init();
@@ -328,7 +389,15 @@ int main()
     void *i = my_realloc(h, 100);
     //my_free(h);
     my_showfreelist();
-    my_init();
+    //my_init();
+    //my_uninit();
+
+    void *q = my_malloc(108);
+    my_free(q);
+    my_showfreelist();
+
+    //my_coalesce();
+    //my_showfreelist();
 
 
 /*    my_showfreelist();
