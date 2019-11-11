@@ -21,16 +21,16 @@ int my_init()
 {
     if (head != NULL)
     {
-	printf("\nRequest rejected!, my_init already initialized!\n");
+        printf("\nRequest rejected!, my_init already initialized!\n");
         return 0;
     };
     head = mmap(NULL, memory, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     if (head == MAP_FAILED)
     {
-	printf("\nRequest rejected!, mmap call unsuccessful!\n");
+        printf("\nRequest rejected!, mmap call unsuccessful!\n");
         return 0;
     };
-   
+
     head->size = 1024 - sizeof(node_t);
     head->next = NULL;
     return 1;
@@ -43,26 +43,31 @@ void my_free(void *ptr)
 {
     if (head != NULL)
 
-    {if (*((int *)ptr - 1) != magic)
     {
-	printf("\nInvalid pointer given!\n");
+        if (*((int *)ptr - 1) != magic)
+        {
+            printf("\nInvalid pointer given!\n");
+        }
+        else
+        {
+            node_t *temp = head;
+            while (temp->next != NULL)
+            {
+                temp = temp->next;
+
+            };
+
+            int ptr_size = *((int *)ptr - 2);
+            int *tptr = ptr - 2;
+            temp->next = (node_t *) tptr;
+            temp->next->size = ptr_size;
+            temp->next->next = NULL;
+        };
     }
     else
     {
-	    node_t *temp = head;
-	    while (temp->next != NULL)
-	    {
-		temp = temp->next;
-
-	    };
-
-	    int ptr_size = *((int *)ptr - 2);
-	    int *tptr = ptr - 2;
-	    temp->next = (node_t *) tptr;
-	    temp->next->size = ptr_size;
-	    temp->next->next = NULL;
-    };}
-    else{printf("\nmy_free unsuccessful, my_init not initialized!\n");};
+        printf("\nmy_free unsuccessful, my_init not initialized!\n");
+    };
 
 };
 
@@ -70,11 +75,11 @@ void *my_malloc(int size)
 {
     if (head == NULL)
     {
-	printf("\nmy_malloc unsuccessful, my_init isnt initialized!\n");
-	return NULL;	
+        printf("\nmy_malloc unsuccessful, my_init isnt initialized!\n");
+        return NULL;
     };
 
-      
+
     if (head->next == NULL)
     {
         int old_head_size = head->size;
@@ -172,13 +177,13 @@ void *my_malloc(int size)
                 {
                     if (temp != head)
                     {
-			prev->next = temp->next;
-			return ptr + 2;
-		    }
-		    else
+                        prev->next = temp->next;
+                        return ptr + 2;
+                    }
+                    else
                     {
-			head = head->next;
-            	        return ptr + 2;  
+                        head = head->next;
+                        return ptr + 2;
                     }
                 };
             };
@@ -196,8 +201,8 @@ void *my_calloc(int num, int size)
 
     if (head == NULL)
     {
-	printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
-	return NULL;	
+        printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
+        return NULL;
 
     };
 
@@ -206,20 +211,20 @@ void *my_calloc(int num, int size)
     void *p = my_malloc(total_size);
     printf("\n%d\n",*((int *)p - 1));
     if (p == NULL)
-    { 
-	printf("\ncalloc isnt successful!\n");
+    {
+        printf("\ncalloc isnt successful!\n");
 
     }
     else
     {
-	char *ptr = (char *) p;
-	int counter = 0;
-	while (counter != total_size)
- 	{
-	    *(ptr + counter) = "A";
+        char *ptr = (char *) p;
+        int counter = 0;
+        while (counter != total_size)
+        {
+            *(ptr + counter) = "A";
             counter++;
-	};
-    
+        };
+
     };
 
     return p;
@@ -231,8 +236,8 @@ void *my_realloc(void *old_ptr, int new_size)
 
     if (head == NULL)
     {
-	printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
-	return NULL;	
+        printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
+        return NULL;
 
     };
 
@@ -244,19 +249,19 @@ void *my_realloc(void *old_ptr, int new_size)
 
     if (new_ptr == NULL)
     {
-	printf("\nRequest of realloc rejected due to unavailability of space!\n");
-	return NULL;
+        printf("\nRequest of realloc rejected due to unavailability of space!\n");
+        return NULL;
     };
-    
+
     int counter = 0;
 
     while (counter != old_size)
     {
-	*((char *) new_ptr + counter) = *((char *) old_ptr + counter);
-	counter++; 
+        *((char *) new_ptr + counter) = *((char *) old_ptr + counter);
+        counter++;
 
     };
-    
+
     printf("\nRequest of realloc accepted!\n");
     my_free(old_ptr);
     return new_ptr;
@@ -269,21 +274,21 @@ void my_showfreelist()
 {
     if (head != NULL)
     {
-    int node_no = 0;
-    node_t *temp = head;
-    printf("\nStart of Freelist\n");
-    while (temp != NULL)
-    {
-        printf("%d:%d:%p\n", node_no,temp->size,temp); 
-        node_no++;
-        temp = temp->next;
+        int node_no = 0;
+        node_t *temp = head;
+        printf("\nStart of Freelist\n");
+        while (temp != NULL)
+        {
+            printf("%d:%d:%p\n", node_no,temp->size,temp);
+            node_no++;
+            temp = temp->next;
+        };
+        printf("End of Freelist\n");
     };
-    printf("End of Freelist\n");
-    }; 
 
     if (head == NULL)
     {
-	printf("\nmy_showfreelist unsuccessful, my_init isnt initialized!\n");	
+        printf("\nmy_showfreelist unsuccessful, my_init isnt initialized!\n");
 
     };
 };
@@ -296,25 +301,25 @@ void my_coalesce()
     {
         node_t *temp = head;
         while (temp != NULL)
-	{
-	    node_t *current = temp->next;
-	    node_t *current_prev = temp;
-	    while (current != NULL)
-	    {
-		if (temp == (current - 1))
-		{
-		    current_prev->next = current->next;
-		    *((int *) temp) = *((int *) temp) + sizeof(node_t) + current->size;
-		};
-		
-		current = current->next;
-	    };
-	    temp = temp->next;
-	};
+        {
+            node_t *current = temp->next;
+            node_t *current_prev = temp;
+            while (current != NULL)
+            {
+                if (temp == (current - 1))
+                {
+                    current_prev->next = current->next;
+                    *((int *) temp) = *((int *) temp) + sizeof(node_t) + current->size;
+                };
+
+                current = current->next;
+            };
+            temp = temp->next;
+        };
     }
     else
     {
-	printf("\nmy_coalesce unsuccessful, my_init isnt initialized!\n");
+        printf("\nmy_coalesce unsuccessful, my_init isnt initialized!\n");
     };
 
 
@@ -328,23 +333,23 @@ void my_uninit()
 
     if (head == NULL)
     {
-	printf("\nmy_uninit unsuccessful, first call my_init!\n");
+        printf("\nmy_uninit unsuccessful, first call my_init!\n");
     }
     else
     {
-	int unmap = munmap(head, memory);
+        int unmap = munmap(head, memory);
         printf("\n%d\n",unmap);
         if (unmap == 0)
-	{
-	    printf("\nmy_uninit successful!\n");
-	    head = NULL;
-	}
-	else
-	{
-	    printf("\nmy_uninit unsuccessful!\n");   
-	};
-	
-    };   
+        {
+            printf("\nmy_uninit successful!\n");
+            head = NULL;
+        }
+        else
+        {
+            printf("\nmy_uninit unsuccessful!\n");
+        };
+
+    };
 
 };
 
@@ -400,12 +405,12 @@ int main()
     //my_showfreelist();
 
 
-/*    my_showfreelist();
-    
-    void *h = my_malloc(100);
-    my_free(h);
+    /*    my_showfreelist();
 
-*/
+        void *h = my_malloc(100);
+        my_free(h);
+
+    */
     return 0;
 };
 
