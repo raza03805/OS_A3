@@ -59,6 +59,7 @@ void my_free(void *ptr)
 
             int ptr_size = *((int *)ptr - 2);
             int *tptr = ptr - 2;
+            printf("\n%p\n",tptr);
             temp->next = (node_t *) tptr;
             temp->next->size = ptr_size;
             temp->next->next = NULL;
@@ -306,7 +307,7 @@ void my_coalesce()
             node_t *current_prev = temp;
             while (current != NULL)
             {
-                if (temp == (current - 1))
+                if (((char *) temp + (temp->size) + sizeof(node_t)) == current)
                 {
                     current_prev->next = current->next;
                     *((int *) temp) = *((int *) temp) + sizeof(node_t) + current->size;
@@ -358,7 +359,7 @@ int main()
 {
     my_init();
     my_showfreelist();
-    void *p = my_malloc(24);
+    /*void *p = my_malloc(24);
     my_showfreelist();
     void *a = my_malloc(200);
     my_showfreelist();
@@ -402,7 +403,24 @@ int main()
     my_showfreelist();
 
     //my_coalesce();
+    //my_showfreelist();*/
+    void *a = my_malloc(100);
+    my_showfreelist();
+    
+    //void *b = my_malloc(92);
     //my_showfreelist();
+   
+   
+    my_free(a);
+    //my_free(b);
+
+    my_showfreelist();
+    printf("%d\n",head->size);
+    printf("%p\n",(char *)((node_t *)(head->next) + 1) + (head->next->size));
+    printf("%p\n",(char *)(head->next) + (head->next->size) + sizeof(node_t));
+
+
+    
 
 
     /*    my_showfreelist();
