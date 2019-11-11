@@ -15,16 +15,17 @@ typedef struct node_t
 } node_t;
 
 node_t *head = NULL; //points to the start of free list.
-
+node_t *start_mmap = NULL;
 
 int my_init()
 {
     if (head != NULL)
     {
-        printf("\nRequest rejected!, my_init already initialized!\n");
+        printf("\nRequest rejected! my_init already initialized!\n");
         return 0;
     };
     head = mmap(NULL, memory, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    start_mmap = head;
     if (head == MAP_FAILED)
     {
         printf("\nRequest rejected!, mmap call unsuccessful!\n");
@@ -58,7 +59,7 @@ void my_free(void *ptr)
             };
 
             int ptr_size = *((int *)ptr - 2);
-            int *tptr = ptr - 2;
+            int *tptr = (int *)ptr - 2; //ptr casted!
             printf("\n%p\n",tptr);
             temp->next = (node_t *) tptr;
             temp->next->size = ptr_size;
@@ -338,8 +339,8 @@ void my_uninit()
     }
     else
     {
-        int unmap = munmap(head, memory);
-        printf("\n%d\n",unmap);
+        int unmap = munmap(start_mmap, memory);
+        //printf("\n%d\n",unmap);
         if (unmap == 0)
         {
             printf("\nmy_uninit successful!\n");
@@ -418,7 +419,9 @@ int main()
     printf("%d\n",head->size);
     printf("%p\n",(char *)((node_t *)(head->next) + 1) + (head->next->size));
     printf("%p\n",(char *)(head->next) + (head->next->size) + sizeof(node_t));
-
+    my_coalesce();
+    my_showfreelist();
+    my_uninit();
 
     
 
