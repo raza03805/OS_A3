@@ -32,7 +32,7 @@ int my_init()
         return 0;
     };
 
-    head->size = 1024 - sizeof(node_t);
+    head->size = memory - sizeof(node_t);
     head->next = NULL;
     return 1;
 
@@ -203,7 +203,7 @@ void *my_calloc(int num, int size)
 
     if (head == NULL)
     {
-        printf("\nmy_realloc unsuccessful, my_init isnt initialized!\n");
+        printf("\nmy_calloc unsuccessful, my_init isnt initialized!\n");
         return NULL;
 
     };
@@ -221,9 +221,10 @@ void *my_calloc(int num, int size)
     {
         char *ptr = (char *) p;
         int counter = 0;
+        
         while (counter != total_size)
         {
-            *(ptr + counter) = "A";
+            *(ptr + counter) = "\0";
             counter++;
         };
 
@@ -245,9 +246,9 @@ void *my_realloc(void *old_ptr, int new_size)
 
     int old_size = *(((int *) old_ptr) - 2);
     printf("%d", old_size);
-    int needed_size = old_size + new_size;
+    //int needed_size = old_size + new_size;
 
-    void *new_ptr = my_malloc(needed_size);
+    void *new_ptr = my_malloc(new_size);
 
     if (new_ptr == NULL)
     {
@@ -256,8 +257,14 @@ void *my_realloc(void *old_ptr, int new_size)
     };
 
     int counter = 0;
+    int iteration = old_size;
+   
+    if (old_size > new_size)
+    {
+	iteration = new_size;
+    }; 
 
-    while (counter != old_size)
+    while (counter != iteration)
     {
         *((char *) new_ptr + counter) = *((char *) old_ptr + counter);
         counter++;
