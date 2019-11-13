@@ -224,7 +224,7 @@ void *my_calloc(int num, int size)
         
         while (counter != total_size)
         {
-            *(ptr + counter) = "\0";
+            *(ptr + counter) = '\0';
             counter++;
         };
 
@@ -306,6 +306,7 @@ void my_showfreelist()
 
 void my_coalesce()
 {
+/*    
     if (head != NULL)
     {
         node_t *temp = head;
@@ -315,7 +316,7 @@ void my_coalesce()
             node_t *current_prev = temp;
             while (current != NULL)
             {
-                if (((char *) temp + (temp->size) + sizeof(node_t)) == current)
+                if (((char *) temp + (temp->size) + sizeof(node_t)) == (char *) current)
                 {
                     current_prev->next = current->next;
                     *((int *) temp) = *((int *) temp) + sizeof(node_t) + current->size;
@@ -331,6 +332,57 @@ void my_coalesce()
         printf("\nmy_coalesce unsuccessful, my_init isnt initialized!\n");
     };
 
+*/
+
+    if (head != NULL)
+    {
+	node_t *iterator_start;
+	node_t *iterator_end;
+	node_t *iterator_prev;
+        node_t *current_start = head;
+	node_t *current_end;
+        while (current_start != NULL)
+        {
+            iterator_start = current_start->next;
+	    //printf("%p",iterator_start->next);
+            iterator_end = (char *) iterator_start + iterator_start->size + sizeof(node_t)/2;
+            //printf("%p",iterator_end);
+
+            iterator_prev = current_start;
+            current_end = (char *) current_end + current_start->size + sizeof(node_t)/2;
+            while (iterator_start != NULL)
+            {
+		printf("\nhey %p, %p\n",current_start, iterator_end);
+		
+                if (current_start == iterator_end)
+                {
+                     printf("\nentered\n");
+		     /*iterator_start->next = current_start; //iterator_end = current_start
+		     (char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + (char *)iterator_start->size; 
+			
+		     (char *)iterator_start->size =  (char *)iterator_start->size + current_start->size + sizeof(node_t)/2*/
+                };
+
+                if (current_end == iterator_start)
+                {
+			printf("\nentered\n");
+		     //current_start->next = iterator_start;
+		     //(char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + iterator_start->size; 
+                };
+
+
+		printf("ddsd:%p",iterator_start);
+                iterator_start = iterator_start->next;
+		
+            };
+		printf("%p",current_start);
+            current_start = current_start->next;
+        };
+    }
+    else
+    {
+        printf("\nmy_coalesce unsuccessful, my_init isnt initialized!\n");
+    };
 
 
 };
@@ -413,6 +465,7 @@ int main()
     //my_coalesce();
     //my_showfreelist();*/
     void *a = my_malloc(100);
+    printf("%p\n", (char *)a + 100 + sizeof(node_t));
     my_showfreelist();
     
     //void *b = my_malloc(92);
