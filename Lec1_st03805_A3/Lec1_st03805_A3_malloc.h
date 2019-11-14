@@ -5,8 +5,8 @@
 
 
 #define magic 12345
-#define memory 1024
-//#define memory 1048576
+//#define memory 1024
+#define memory 1048576
 
 
 

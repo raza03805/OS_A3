@@ -42,6 +42,7 @@ void my_free(void *ptr)
         }
         else
         {
+            *((int *)ptr - 1) = 0;
             //my_coalesce();
             node_t *temp = head;
             while (temp->next != NULL)
