@@ -16,7 +16,7 @@ typedef struct node_t
 
 node_t *head = NULL; //points to the start of free list.
 node_t *start_mmap = NULL;
-
+  
 int my_init()
 {
     if (head != NULL)
@@ -311,34 +311,6 @@ void my_showfreelist()
 
 void my_coalesce()
 {
-/*    
-    if (head != NULL)
-    {
-        node_t *temp = head;
-        while (temp != NULL)
-        {
-            node_t *current = temp->next;
-            node_t *current_prev = temp;
-            while (current != NULL)
-            {
-                if (((char *) temp + (temp->size) + sizeof(node_t)) == (char *) current)
-                {
-                    current_prev->next = current->next;
-                    *((int *) temp) = *((int *) temp) + sizeof(node_t) + current->size;
-                };
-
-                current = current->next;
-            };
-            temp = temp->next;
-        };
-    }
-    else
-    {
-        printf("\nmy_coalesce unsuccessful, my_init isnt initialized!\n");
-    };
-
-*/
-
     if (head != NULL)
     {
 	node_t *iterator_start;
@@ -351,11 +323,11 @@ void my_coalesce()
             printf("\nfirst loop\n");
             iterator_start = current_start->next;
 	    //printf("%p",iterator_start->next);
-            iterator_end = (char *) iterator_start + iterator_start->size + sizeof(node_t)/2;
+            iterator_end = (node_t *)((char *) iterator_start + iterator_start->size + sizeof(node_t)/2);
             //printf("%p",iterator_end);
 
             iterator_prev = current_start;
-            current_end = (char *) current_end + current_start->size + sizeof(node_t)/2;
+            current_end = (node_t *)((char *)current_end + current_start->size + sizeof(node_t)/2);
             printf("\ncurrent:%p, iterator:%p\n", current_start, iterator_start);
             while (iterator_start != NULL)
             {
@@ -368,7 +340,7 @@ void my_coalesce()
 		     /*iterator_start->next = current_start; //iterator_end = current_start
 		     (char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + (char *)iterator_start->size;*/
 			
-		     iterator_start->size = (char *)iterator_start->size + current_start->size + sizeof(node_t)/2;
+		     iterator_start->size = iterator_start->size + current_start->size + sizeof(node_t)/2;
                      
 		     if (iterator_prev == head)
 		     {
@@ -435,7 +407,7 @@ void my_uninit()
     {
         int unmap = munmap(start_mmap, memory);
         //printf("\n%d\n",unmap);
-        if (unmap == 0)
+        if (unmap == 0)	
         {
             printf("\nmy_uninit successful!\n");
             head = NULL;
@@ -452,8 +424,8 @@ void my_uninit()
 
 int main()
 {
-    my_init();
-    my_showfreelist();
+    /*my_init();
+    my_showfreelist();*/
     /*void *p = my_malloc(24);
     my_showfreelist();
     void *a = my_malloc(200);
@@ -499,15 +471,15 @@ int main()
 
     //my_coalesce();
     //my_showfreelist();*/
-    void *a = my_malloc(100);
+    /*void *a = my_malloc(100);
     printf("%p\n", (char *)a + 100 + sizeof(node_t));
-    my_showfreelist();
+    my_showfreelist();*/
     
     //void *b = my_malloc(92);
     //my_showfreelist();
    
    
-    my_free(a);
+    /*my_free(a);
     //my_free(b);
 
     my_showfreelist();
@@ -529,6 +501,16 @@ int main()
         my_free(h);
 
     */
+    my_init();
+    my_showfreelist();
+    void *a = my_malloc(100);
+    void *b = my_malloc(110);
+    void *c = my_malloc(120);
+    void *d = my_malloc(130);
+    void *e = my_malloc(140);
+    void *f = my_malloc(150);
+    my_showfreelist();
+
     return 0;
 };
 
