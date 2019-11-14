@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include "Lec1_st03805_A3.malloc.h"
+#include "Lec1_st03805_A3_malloc.h"
 
 
 node_t *head = NULL; //points to the start of free list.
