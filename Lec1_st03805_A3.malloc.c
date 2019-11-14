@@ -80,7 +80,12 @@ void *my_malloc(int size)
         printf("\nmy_malloc unsuccessful, my_init isnt initialized!\n");
         return NULL;
     };
-
+    if (size < 1)
+    {
+        printf("\nmy_malloc unsuccessful, size can't be %d!\n", size);
+        return NULL;
+    };
+  
 
     if (head->next == NULL)
     {
@@ -341,8 +346,9 @@ void my_coalesce()
 	node_t *iterator_prev;
         node_t *current_start = head;
 	node_t *current_end;
-        while (current_start != NULL)
+        while (current_start->next != NULL)
         {
+            printf("\nfirst loop\n");
             iterator_start = current_start->next;
 	    //printf("%p",iterator_start->next);
             iterator_end = (char *) iterator_start + iterator_start->size + sizeof(node_t)/2;
@@ -350,33 +356,62 @@ void my_coalesce()
 
             iterator_prev = current_start;
             current_end = (char *) current_end + current_start->size + sizeof(node_t)/2;
+            printf("\ncurrent:%p, iterator:%p\n", current_start, iterator_start);
             while (iterator_start != NULL)
             {
-		printf("\nhey %p, %p\n",current_start, iterator_end);
+//		printf("\nhey %p, %p\n",current_start, iterator_end);
+                printf("\ncurrent:%p, iterator:%p\n", current_start, iterator_start);
 		
                 if (current_start == iterator_end)
                 {
                      printf("\nentered\n");
 		     /*iterator_start->next = current_start; //iterator_end = current_start
-		     (char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + (char *)iterator_start->size; 
+		     (char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + (char *)iterator_start->size;*/
 			
-		     (char *)iterator_start->size =  (char *)iterator_start->size + current_start->size + sizeof(node_t)/2*/
+		     iterator_start->size = (char *)iterator_start->size + current_start->size + sizeof(node_t)/2;
+                     
+		     if (iterator_prev == head)
+		     {
+			head = head->next;
+		     }
+		     else
+		     {
+			iterator_prev->next = current_start->next;
+		     };
+
                 };
 
                 if (current_end == iterator_start)
                 {
-			printf("\nentered\n");
+		     //printf("\nentered\n");
 		     //current_start->next = iterator_start;
 		     //(char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + iterator_start->size; 
+			
+		     
+		     if (iterator_prev == head)
+		     {
+			head = current_start->next;
+		     }
+		     else
+		     {
+			current_start->next = iterator_start->next;
+		     };
                 };
 
 
-		printf("ddsd:%p",iterator_start);
-                iterator_start = iterator_start->next;
+//		printf("ddsd:%p",iterator_start);
+                iterator_start = iterator_start->next; 
+		printf("\nNext iterator: %p\n", iterator_start);
+                printf("\nfirst loop end\n");
 		
             };
-		printf("%p",current_start);
+            printf("\nOuter loop start\n");
+//		printf("%p",current_start);
+	    iterator_prev = current_start;
             current_start = current_start->next;
+            printf("\nOuter loop end\n");
+	    printf("\ncurrent: %p\n", current_start);
+
         };
     }
     else
@@ -480,6 +515,8 @@ int main()
     printf("%p\n",(char *)((node_t *)(head->next) + 1) + (head->next->size));
     printf("%p\n",(char *)(head->next) + (head->next->size) + sizeof(node_t));
     my_coalesce();
+    my_showfreelist();
+    void *qw = my_malloc(0);
     my_showfreelist();
     my_uninit();
 
