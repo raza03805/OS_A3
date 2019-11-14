@@ -42,6 +42,7 @@ void my_free(void *ptr)
         }
         else
         {
+            //my_coalesce();
             node_t *temp = head;
             while (temp->next != NULL)
             {
@@ -51,7 +52,7 @@ void my_free(void *ptr)
 
             int ptr_size = *((int *)ptr - 2);
             int *tptr = (int *)ptr - 2; //ptr casted!
-            printf("\n%p\n",tptr);
+            //printf("\n%p\n",tptr);
             temp->next = (node_t *) tptr;
             temp->next->size = ptr_size;
             temp->next->next = NULL;
@@ -77,9 +78,14 @@ void *my_malloc(int size)
         return NULL;
     };
   
+   if ((sizeof(node_t) - 2*sizeof(int) + 1) > size)
+    { 
+	size = (sizeof(node_t) - 2*sizeof(int) + 1);
+    };
 
     if (head->next == NULL)
     {
+
         int old_head_size = head->size;
         int actual_free_space = sizeof(node_t) + old_head_size;
         int needed_space = (2*sizeof(int)) + size;
@@ -196,7 +202,7 @@ void *my_malloc(int size)
 
 void *my_calloc(int num, int size)
 {
-
+    
     if (head == NULL)
     {
         printf("\nmy_calloc unsuccessful, my_init isnt initialized!\n");
@@ -205,9 +211,9 @@ void *my_calloc(int num, int size)
     };
 
     int total_size = num*size;
-    printf("%d",total_size);
+    //printf("%d",total_size);
     void *p = my_malloc(total_size);
-    printf("\n%d\n",*((int *)p - 1));
+    //printf("\n%d\n",*((int *)p - 1));
     if (p == NULL)
     {
         printf("\ncalloc isnt successful!\n");
@@ -241,14 +247,14 @@ void *my_realloc(void *old_ptr, int new_size)
     };
 
     int old_size = *(((int *) old_ptr) - 2);
-    printf("%d", old_size);
+    //printf("%d", old_size);
     //int needed_size = old_size + new_size;
 
     void *new_ptr = my_malloc(new_size);
 
     if (new_ptr == NULL)
     {
-        printf("\nRequest of realloc rejected due to unavailability of space!\n");
+        printf("\nRequest of realloc rejected.\n");
         return NULL;
     };
 
@@ -290,7 +296,7 @@ void my_showfreelist()
         };
         printf("End of Freelist\n");
     };
-
+    
     if (head == NULL)
     {
         printf("\nmy_showfreelist unsuccessful, my_init isnt initialized!\n");
@@ -309,33 +315,23 @@ void my_coalesce()
 	node_t *iterator_prev;
         node_t *current_start = head;
 	node_t *current_end;
-        while (current_start->next != NULL)
+        while (current_start->next!= NULL)
         {
-            printf("\nfirst loop\n");
             iterator_start = current_start->next;
-	    //printf("%p",iterator_start->next);
             iterator_end = (node_t *)((char *) iterator_start + iterator_start->size + sizeof(node_t)/2);
-            //printf("%p",iterator_end);
 
             iterator_prev = current_start;
-            current_end = (node_t *)((char *)current_end + current_start->size + sizeof(node_t)/2);
-            printf("\ncurrent:%p, iterator:%p\n", current_start, iterator_start);
-            while (iterator_start != NULL)
+            current_end = (node_t *)((char *)current_start + current_start->size + sizeof(node_t)/2);
+            while (iterator_start->next != NULL)
             {
-//		printf("\nhey %p, %p\n",current_start, iterator_end);
-                printf("\ncurrent:%p, iterator:%p\n", current_start, iterator_start);
 		
                 if (current_start == iterator_end)
                 {
-                     printf("\nentered\n");
-		     /*iterator_start->next = current_start; //iterator_end = current_start
-		     (char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + (char *)iterator_start->size;*/
-			
 		     iterator_start->size = iterator_start->size + current_start->size + sizeof(node_t)/2;
-                     
 		     if (iterator_prev == head)
-		     {
+		     {  
 			head = head->next;
+                        current_start = current_start->next;
 		     }
 		     else
 		     {
@@ -346,11 +342,7 @@ void my_coalesce()
 
                 if (current_end == iterator_start)
                 {
-		     //printf("\nentered\n");
-		     //current_start->next = iterator_start;
-		     //(char *)current_start->size = (char *)current_start->size + sizeof(node_t)/2 + iterator_start->size; 
-			
-		     
+		     current_start->size = iterator_start->size + current_start->size + sizeof(node_t)/2;
 		     if (iterator_prev == head)
 		     {
 			head = current_start->next;
@@ -359,21 +351,21 @@ void my_coalesce()
 		     {
 			current_start->next = iterator_start->next;
 		     };
+		
                 };
 
 
-//		printf("ddsd:%p",iterator_start);
-                iterator_start = iterator_start->next; 
-		printf("\nNext iterator: %p\n", iterator_start);
-                printf("\nfirst loop end\n");
+                if (iterator_start->next != NULL)
+                {
+		iterator_start = iterator_start->next;
+		iterator_end = (node_t *)((char *) iterator_start + iterator_start->size + sizeof(node_t)/2); 
+		};
 		
             };
-            printf("\nOuter loop start\n");
-//		printf("%p",current_start);
+          
 	    iterator_prev = current_start;
-            current_start = current_start->next;
-            printf("\nOuter loop end\n");
-	    printf("\ncurrent: %p\n", current_start);
+            current_start = current_start->next; 
+            //my_showfreelist();
 
         };
     }
